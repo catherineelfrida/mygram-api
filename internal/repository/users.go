@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-
 	"github.com/catherineelfrida/mygram-api/internal/infrastructure"
 	"github.com/catherineelfrida/mygram-api/internal/model"
 )

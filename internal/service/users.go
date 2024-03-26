@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"github.com/catherineelfrida/mygram-api/internal/model"
 	"github.com/catherineelfrida/mygram-api/internal/repository"
 )
