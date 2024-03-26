@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/handler"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/infrastructure"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/repository"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/router"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/service"
+	"github.com/catherineelfrida/mygram-api/internal/handler"
+	"github.com/catherineelfrida/mygram-api/internal/infrastructure"
+	"github.com/catherineelfrida/mygram-api/internal/repository"
+	"github.com/catherineelfrida/mygram-api/internal/router"
+	"github.com/catherineelfrida/mygram-api/internal/service"
 	"github.com/gin-gonic/gin"
 
-	_ "github.com/Calmantara/go-kominfo-2024/project-structure/cmd/docs"
+	_ "github.com/catherineelfrida/mygram-api/cmd/docs"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

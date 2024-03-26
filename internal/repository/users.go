@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/infrastructure"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/model"
+	"github.com/catherineelfrida/mygram-api/internal/infrastructure"
+	"github.com/catherineelfrida/mygram-api/internal/model"
 )
 
 type UserQuery interface {

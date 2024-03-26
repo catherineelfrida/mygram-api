@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/model"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/repository"
+	"github.com/catherineelfrida/mygram-api/internal/model"
+	"github.com/catherineelfrida/mygram-api/internal/repository"
 )
 
 type UserService interface {

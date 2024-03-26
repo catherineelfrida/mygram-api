@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/service"
-	"github.com/Calmantara/go-kominfo-2024/project-structure/pkg"
+	"github.com/catherineelfrida/mygram-api/internal/service"
+	"github.com/catherineelfrida/mygram-api/pkg"
 	"github.com/gin-gonic/gin"
 )
 

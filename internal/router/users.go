@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/Calmantara/go-kominfo-2024/project-structure/internal/handler"
+	"github.com/catherineelfrida/mygram-api/internal/handler"
 	"github.com/gin-gonic/gin"
 )
 
