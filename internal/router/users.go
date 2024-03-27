@@ -1,24 +1,22 @@
 package router
 
 import (
-	"github.com/catherineelfrida/mygram-api/internal/handler"
 	"github.com/gin-gonic/gin"
+	"github.com/catherineelfrida/mygram-api/internal/handler"
+	"github.com/catherineelfrida/mygram-api/internal/service"
+	"github.com/catherineelfrida/mygram-api/pkg"
 )
 
-type UserRouter interface {
-	Mount()
-}
+func SetUserRoutes(r *gin.Engine, userService *service.UserService) {
+	userHandler := handler.NewUserHandler(userService)
 
-type userRouterImpl struct {
-	v       *gin.RouterGroup
-	handler handler.UserHandler
-}
+	r.POST("/users/register", userHandler.RegisterUser)
+	r.POST("/users/login", userHandler.LoginUser)
 
-func NewUserRouter(v *gin.RouterGroup, handler handler.UserHandler) UserRouter {
-	return &userRouterImpl{v: v, handler: handler}
-}
-
-func (u *userRouterImpl) Mount() {
-	u.v.GET("", u.handler.GetUsers)
-	u.v.GET("/:id", u.handler.GetUsersById)
+	userGroup := r.Group("/users")
+	userGroup.Use(pkg.AuthMiddleware())
+	{
+		userGroup.PUT("/:userId", userHandler.UpdateUser)
+		userGroup.DELETE("/:userId", userHandler.DeleteUser)
+	}
 }

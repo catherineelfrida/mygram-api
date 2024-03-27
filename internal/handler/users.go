@@ -2,73 +2,87 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
+	"github.com/gin-gonic/gin"
+	"github.com/catherineelfrida/mygram-api/internal/model"
 	"github.com/catherineelfrida/mygram-api/internal/service"
 	"github.com/catherineelfrida/mygram-api/pkg"
-	"github.com/gin-gonic/gin"
 )
 
-type UserHandler interface {
-	GetUsers(ctx *gin.Context)
-	GetUsersById(ctx *gin.Context)
+type UserHandler struct {
+	userService *service.UserService
 }
 
-type userHandlerImpl struct {
-	svc service.UserService
-}
-
-func NewUserHandler(svc service.UserService) UserHandler {
-	return &userHandlerImpl{
-		svc: svc,
+func NewUserHandler(userService *service.UserService) *UserHandler {
+	return &UserHandler{
+		userService: userService,
 	}
 }
 
-// ShowUsers godoc
-//
-//	@Summary		Show users list
-//	@Description	will fetch 3rd party server to get users data
-//	@Tags			users
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	[]model.User
-//	@Failure		400	{object}	pkg.ErrorResponse
-//	@Failure		404	{object}	pkg.ErrorResponse
-//	@Failure		500	{object}	pkg.ErrorResponse
-//	@Router			/users [get]
-func (u *userHandlerImpl) GetUsers(ctx *gin.Context) {
-	users, err := u.svc.GetUsers(ctx)
+func (h *UserHandler) RegisterUser(c *gin.Context) {
+	var newUser model.User
+	if err := c.ShouldBindJSON(&newUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	user, err := h.userService.RegisterUser(newUser)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, users)
+
+	c.JSON(http.StatusCreated, user)
 }
 
-// ShowUsersById godoc
-//
-//	@Summary		Show users detail
-//	@Description	will fetch 3rd party server to get users data to get detail user
-//	@Tags			users
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		int	true	"User ID"
-//	@Success		200	{object}	model.User
-//	@Failure		400	{object}	pkg.ErrorResponse
-//	@Failure		404	{object}	pkg.ErrorResponse
-//	@Failure		500	{object}	pkg.ErrorResponse
-//	@Router			/users/{id} [get]
-func (u *userHandlerImpl) GetUsersById(ctx *gin.Context) {
-	// get id user
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if id == 0 || err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param"})
+func (h *UserHandler) LoginUser(c *gin.Context) {
+	var loginUserDTO service.LoginUserDTO
+	if err := c.BindJSON(&loginUserDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := u.svc.GetUsersById(ctx, uint64(id))
+
+	// Authenticate user
+	user, err := h.userService.Authenticate(loginUserDTO)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+
+	// Generate JWT token
+	token, err := pkg.GenerateJWT(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	userID := c.Param("userId")
+	var updatedUser model.User
+	if err := c.ShouldBindJSON(&updatedUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	user, err := h.userService.UpdateUser(userID, updatedUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	userID := c.Param("userId")
+
+	if err := h.userService.DeleteUser(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Your account has been successfully deleted"})
 }

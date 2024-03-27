@@ -1,55 +1,59 @@
+// File: repository/user.go
 package repository
 
 import (
-	"context"
-	"github.com/catherineelfrida/mygram-api/internal/infrastructure"
+	"gorm.io/gorm"
+
 	"github.com/catherineelfrida/mygram-api/internal/model"
 )
 
-type UserQuery interface {
-	GetUsers(ctx context.Context) ([]model.User, error)
-	GetUsersByID(ctx context.Context, id uint64) (model.User, error)
+type UserRepository struct {
+	db *gorm.DB
 }
 
-type UserCommand interface {
-	CreateUser(ctx context.Context, user model.User) (model.User, error)
-}
-
-type userQueryImpl struct {
-	db infrastructure.GormPostgres
-}
-
-type userQueryMongoImpl struct{}
-
-func NewUserQueryMongo() UserQuery {
-	return userQueryMongoImpl{}
-}
-
-func (u userQueryMongoImpl) GetUsers(ctx context.Context) ([]model.User, error) {
-	return nil, nil
-}
-func (u userQueryMongoImpl) GetUsersByID(ctx context.Context, id uint64) (model.User, error) {
-	return model.User{}, nil
-}
-
-func NewUserQuery(db infrastructure.GormPostgres) UserQuery {
-	return &userQueryImpl{db: db}
-}
-
-func (u *userQueryImpl) GetUsers(ctx context.Context) ([]model.User, error) {
-	db := u.db.GetConnection()
-	users := []model.User{}
-	if err := db.WithContext(ctx).Table("users").Find(&users).Error; err != nil {
-		return nil, nil
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{
+		db: db,
 	}
-	return users, nil
 }
 
-func (u *userQueryImpl) GetUsersByID(ctx context.Context, id uint64) (model.User, error) {
-	db := u.db.GetConnection()
-	users := model.User{}
-	if err := db.WithContext(ctx).Table("users").Where("id = ?", id).Find(&users).Error; err != nil {
-		return model.User{}, nil
+func (r *UserRepository) Create(user *model.User) (*model.User, error) {
+	if err := r.db.Create(user).Error; err != nil {
+		return nil, err
 	}
-	return users, nil
+	return user, nil
+}
+
+func (r *UserRepository) GetByEmail(email string) (*model.User, error) {
+	var user model.User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) Update(userID string, updatedUser *model.User) (*model.User, error) {
+	var user model.User
+	if err := r.db.First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.db.Model(&user).Updates(updatedUser).Error; err != nil {
+		return nil, err
+	}
+
+	return updatedUser, nil
+}
+
+func (r *UserRepository) Delete(userID string) error {
+	var user model.User
+	if err := r.db.First(&user, userID).Error; err != nil {
+		return err
+	}
+
+	if err := r.db.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
